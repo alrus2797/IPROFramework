@@ -27,6 +27,8 @@ class Model
         arma::SpMat<double> OLB;
         map < pair<int,int>, double>  m_Weights;
 
+        map < int, set<int>> m_Edges;
+
         int nvertices;
         int nfaces;
         int edges;
@@ -89,21 +91,6 @@ class Model
             return make_pair(make_pair(diff[0],diff[1]),make_pair(eq[0],eq[1]));
         }
 
-
-
-        void PrintOFF(){
-            for(int i = 0; i < nvertices; i++)
-            {
-                cout<<m_Vertexs[i]<<endl;
-            }
-
-            cout<<" "<<endl;
-            for(int i = 0; i < nfaces; i++)
-            {
-                cout<< get<0>(m_Faces[i]) <<" "<<get<1>(m_Faces[i])<<" "<<get<2>(m_Faces[i])<<endl  ;
-            }
-        }
-     
         void ReadOff(string  filename){
             ifstream file;
             file.open(filename);
@@ -111,7 +98,7 @@ class Model
             file>>line;
             file>>nvertices >> nfaces >> edges;
             cout<<nvertices <<" " <<nfaces <<"  "<< edges<<endl;
-
+            OLB.set_size(nvertices,nvertices);
             double x,y,z;
 
             for(int i = 0; i < nvertices; i++)
@@ -127,8 +114,32 @@ class Model
             {
                 file>> edge >> v1 >>v2 >> v3;
                 m_Faces.push_back(make_tuple(v1,v2,v3));
+
+                m_Edges[v1].insert(v2);
+                m_Edges[v1].insert(v3);
+                m_Edges[v2].insert(v1);
+                m_Edges[v2].insert(v3);
+                m_Edges[v3].insert(v1);
+                m_Edges[v3].insert(v2);
+            }
+
+
+        }
+
+
+
+        void PrintOFF(){
+            for(int i = 0; i < nvertices; i++){
+                cout<<m_Vertexs[i]<<endl;
+            }
+
+            cout<<" "<<endl;
+            for(int i = 0; i < nfaces; i++){
+                cout<< get<0>(m_Faces[i]) <<" "<<get<1>(m_Faces[i])<<" "<<get<2>(m_Faces[i])<<endl  ;
             }
         }
+
+
         void SetAngles()
         {
             
@@ -220,9 +231,48 @@ class Model
         }
 
 
-        void OLB()
+        void setOLBValues()
         {
+            for(int i = 0; i < nvertices; i++)
+            {
+                
+                for(int j = 0; j < nvertices; j++)
+                {
+                    //Tiene arista
+                    if (m_Edges[i].find(j) != m_Edges[i].end())
+                    {
+                        //Tiene peso disponible
+                        pair<int,int> p(i,j);
+                        if (m_Weights.find(p) != m_Weights.end()){
+                            //cout<<"Peso: "<<i <<" "<<j<<" -> "<<m_Weights[p]<<endl;
+                            OLB(i,j)=m_Weights[p];
+                        }
+                        else{
+                            OLB(i,j)=-1;
+                        }
+                    }
+                    if (i==j){
+                        OLB(i,j)=-2;
+                    }
+                }
+            }
             
+            for(int i = 0; i < nvertices; i++)
+            {
+                double sum=0;
+                for (int j=0; j < nvertices; j++)
+                {
+                    sum += OLB.at(i,j);
+                }
+                OLB(i,i) = -sum;
+            }
+            
+            
+        }
+
+        void showOLB()
+        {
+            this->OLB.raw_print();
         }
 
         void showWeights()
