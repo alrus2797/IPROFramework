@@ -1,4 +1,6 @@
 #include <vector>
+#include <math.h>
+
 using namespace std;
 
 typedef vector<double> eucVector;
@@ -49,6 +51,16 @@ ostream& operator << (ostream &o,const Point3D &p)
 {
     o << p.x << ", " << p.y << ", "<<p.z;
     return o;
+}
+
+double getVectorModule(eucVector v)
+{
+    double res=0;
+    for(auto i:v)
+    {
+        res+=pow(i,2);
+    }
+    return pow(res,0.5);
 }
 
 void showVector(eucVector v,string message="vector")

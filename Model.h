@@ -21,8 +21,10 @@ void imp(vector<int> t, string message="vec")
 class Model
 {
     private:
-        vector< Point3D >  m_Vertexs;
+        vector< Point3D >   m_Vertexs;
         vector< tuple<int,int,int> >  m_Faces;
+        
+        arma::SpMat<double> OLB;
         map < pair<int,int>, double>  m_Weights;
 
         int nvertices;
@@ -92,7 +94,6 @@ class Model
         void PrintOFF(){
             for(int i = 0; i < nvertices; i++)
             {
-                //cout<< get<0>(m_Vertexs[i])<<" "<< get<1>(m_Vertexs[i])<<" "<< get<2>(m_Vertexs[i])<<endl;
                 cout<<m_Vertexs[i]<<endl;
             }
 
@@ -116,7 +117,6 @@ class Model
             for(int i = 0; i < nvertices; i++)
             {
                 file>> x >> y >>z;
-                //m_Vertexs.push_back(make_tuple(x,y,z));
                 m_Vertexs.push_back(Point3D(x,y,z));
 
             }
@@ -144,10 +144,10 @@ class Model
 
                         if (pEq.second != -1)
                         {
-                            // cout<<"Face's points: "<<vEq.first<<", "<<vEq.second<<endl;
-                            // cout<<"   ->  "<<m_Vertexs[vEq.first]<<"   ,    "<<m_Vertexs[vEq.second]<<endl;
-                            // cout<<"   DP: "<<pDiff.first<<"   ,   "<<pDiff.second<<endl;
                             auto pDiff = Diff.first;
+                            // cout<<"Face's points: "<<pEq.first<<", "<<pEq.second<<endl;
+                            // cout<<"   ->  "<<m_Vertexs[pEq.first]<<"   ,    "<<m_Vertexs[pEq.second]<<endl;
+                            // cout<<"   DP: "<<m_Vertexs[pDiff.first]<<"   ,   "<<m_Vertexs[pDiff.second]<<endl;
 
                             //Puntos Opuestos
                             Point3D pD1 = m_Vertexs[pDiff.first];
@@ -156,19 +156,72 @@ class Model
                             //Puntos Comunes
                             Point3D pE1 = m_Vertexs[pEq.first];
                             Point3D pE2 = m_Vertexs[pEq.second];
+                            
+                            double numerador=0,denominador,angle1,angle2;
 
                             //Vectores Primera cara
                             eucVector v1 = pE1-pD1;
                             eucVector v2 = pE2-pD1;
 
-                            //Unpack 
+                            // showVector(v1,"  v1");
+                            // showVector(v2,"  v2");
                             
-                            m_Weights[pEq]=01;
+
+                            //Get angulo primera cara
+                            
+                            for(int i = 0; i < 3; i++)
+                            {
+                                numerador += v1[i]*v2[i];
+                            }
+
+
+                            denominador = getVectorModule(v1)*getVectorModule(v2);
+
+                            angle1 = acos(numerador/denominador);
+                            //cout<<"Angulo1: "<<angle1<<endl;
+
+
+                            //Get cotan of angle
+                            angle1 = 1/tan(angle1);
+
+
+                            //Vectores Segunda cara
+                            v1 = pE1-pD2;
+                            v2 = pE2-pD2;
+
+
+
+
+                            //Get angulo segunda cara
+                            numerador=0;
+
+                            for(int i = 0; i < 3; i++)
+                            {
+                                numerador += v1[i]*v2[i];
+                            }
+                            denominador = getVectorModule(v1)*getVectorModule(v2);
+
+                            angle2 = acos(numerador/denominador);
+
+                            //Get cotan of angle2
+                            angle2 = 1/tan(angle2);
+
+                            //cout<<"   Angulos = "<<angle1<<", "<<angle2<<", "<<endl;
+
+                            //Añadirlo a map
+                            m_Weights[pEq]=(angle1+angle2)/2;
+
+                            //cout<<endl;
                         }
                     }
                     
                 }   
-            }
+            }   
+        }
+
+
+        void OLB()
+        {
             
         }
 
