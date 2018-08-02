@@ -3,7 +3,7 @@
 
 using namespace std;
 
-typedef vector<double> eucVector;
+//typedef vector<double> eucVector;
 
 
 class Point3D
@@ -53,23 +53,23 @@ ostream& operator << (ostream &o,const Point3D &p)
     return o;
 }
 
-double getVectorModule(eucVector v)
-{
-    double res=0;
-    for(auto i:v)
-    {
-        res+=pow(i,2);
-    }
-    return pow(res,0.5);
-}
+// double getVectorModule(eucVector v)
+// {
+//     double res=0;
+//     for(auto i:v)
+//     {
+//         res+=pow(i,2);
+//     }
+//     return pow(res,0.5);
+// }
 
-void showVector(eucVector v,string message="vector")
-{
-    cout<<message<<": ( ";
-    for(auto i: v)
-    {
-        cout<<i<<" ";
-    }
-    cout<<")"<<endl;
-}
+// void showVector(eucVector v,string message="vector")
+// {
+//     cout<<message<<": ( ";
+//     for(auto i: v)
+//     {
+//         cout<<i<<" ";
+//     }
+//     cout<<")"<<endl;
+// }
 
