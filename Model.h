@@ -1,12 +1,12 @@
-#include <iostream>
+
 #include <armadillo>
-#include <vector>
+
 #include <tuple>
 #include <map>
 #include <set>
 #include <fstream>
 
-#include "Point3D.h"
+#include "PointD.h"
 
 void imp(vector<int> t, string message="vec")
 {
@@ -18,10 +18,12 @@ void imp(vector<int> t, string message="vec")
     cout<<endl;
 }
 
+
+template <int N>
 class Model
 {
     private:
-        vector< Point3D >   m_Vertexs;
+        vector< PointD<N> >   m_Vertexs;
         vector< tuple<int,int,int> >  m_Faces;
         
         arma::SpMat<double> OLB;
@@ -34,6 +36,7 @@ class Model
         int edges;
      
     public:
+        Model(){}
 
         pair<pair<int,int>,pair<int,int>> getDiff(tuple<int,int,int>& t1 , tuple<int,int,int>& t2)
         {
@@ -97,15 +100,14 @@ class Model
             string line;
             file>>line;
             file>>nvertices >> nfaces >> edges;
-            cout<<nvertices <<" " <<nfaces <<"  "<< edges<<endl;
+            cout<<"Data: "<<nvertices <<" vertices, " <<nfaces <<"  caras."<<endl;
             OLB.set_size(nvertices,nvertices);
             double x,y,z;
 
             for(int i = 0; i < nvertices; i++)
             {
                 file>> x >> y >>z;
-                m_Vertexs.push_back(Point3D(x,y,z));
-
+                m_Vertexs.push_back(PointD<N>({x,y,z}));
             }
 
             int edge,v1,v2,v3;
@@ -129,8 +131,9 @@ class Model
 
 
         void PrintOFF(){
+            cout<<endl;
             for(int i = 0; i < nvertices; i++){
-                cout<<m_Vertexs[i]<<endl;
+                cout<<m_Vertexs[i];
             }
 
             cout<<" "<<endl;
@@ -161,12 +164,12 @@ class Model
                             // cout<<"   DP: "<<m_Vertexs[pDiff.first]<<"   ,   "<<m_Vertexs[pDiff.second]<<endl;
 
                             //Puntos Opuestos
-                            Point3D pD1 = m_Vertexs[pDiff.first];
-                            Point3D pD2 = m_Vertexs[pDiff.second];
+                            PointD<N> pD1 = m_Vertexs[pDiff.first];
+                            PointD<N> pD2 = m_Vertexs[pDiff.second];
 
                             //Puntos Comunes
-                            Point3D pE1 = m_Vertexs[pEq.first];
-                            Point3D pE2 = m_Vertexs[pEq.second];
+                            PointD<N> pE1 = m_Vertexs[pEq.first];
+                            PointD<N> pE2 = m_Vertexs[pEq.second];
                             
                             double numerador=0,denominador,angle1,angle2;
 
@@ -186,7 +189,7 @@ class Model
                             }
 
 
-                            denominador = getVectorModule(v1)*getVectorModule(v2);
+                            denominador = v1.getModule()*v2.getModule();
 
                             angle1 = acos(numerador/denominador);
                             //cout<<"Angulo1: "<<angle1<<endl;
@@ -210,7 +213,7 @@ class Model
                             {
                                 numerador += v1[i]*v2[i];
                             }
-                            denominador = getVectorModule(v1)*getVectorModule(v2);
+                            denominador = v1.getModule()*v2.getModule();
 
                             angle2 = acos(numerador/denominador);
 
@@ -272,11 +275,13 @@ class Model
 
         void showOLB()
         {
+            cout<<"Mostrar Matriz OLB"<<endl;
             this->OLB.raw_print();
         }
 
-        void showWeights()
-        {
+        void showWeights(){
+
+            cout<<"Mostrar Pesos: "<<endl;
             for (auto i: this->m_Weights)
             {
                 auto tupla=i.first;

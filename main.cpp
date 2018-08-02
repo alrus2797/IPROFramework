@@ -1,21 +1,25 @@
+#include "Model.h"
 
-
-//#include "Model.h"
-#include "PointD.h"
-
-using namespace std;
 
 
 int main()
 {
- //   Model modelo;
-//    modelo.ReadOff("test.off");
-    PointD<2> a({-1,2});
-    PointD<2> b({3,5});
+    Model<3> modelo;
+    modelo.ReadOff("0003.sampling.3.off");
+    modelo.PrintOFF();
+    cout<<endl;
+    modelo.SetAngles();
+    modelo.showWeights();
 
-    eucVector res= (b-a);
+    cout<<endl;
+    modelo.setOLBValues();
+    modelo.showOLB();
+    // PointD<2> a({-1,2});
+    // PointD<2> b({3,5});
+    // a=b;
+    // eucVector res= (b-a);
 
-    cout<< res <<endl;
+    // cout<< res <<endl;
     //int pru;
     //cin>>pru;
     // modelo.SetAngles();
