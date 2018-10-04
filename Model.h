@@ -8,7 +8,8 @@
 
 #include "Point3D.h"
 
-void imp(vector<int> t, string message="vec")
+template <class T>
+void imp(vector<T> t, string message="vec")
 {
     cout<<message<<": ";
     for(auto i: t)
@@ -25,13 +26,22 @@ class Model
         vector< tuple<int,int,int> >  m_Faces;
         
         arma::SpMat<double> OLB;
+        arma::vec eigval;
+        arma::mat eigvec;
+
         map < pair<int,int>, double>  m_Weights;
 
         map < int, set<int>> m_Edges;
 
+        //Properties
         int nvertices;
         int nfaces;
         int edges;
+        string filename;
+
+        int m_nEigen;
+
+
      
     public:
 
@@ -100,6 +110,7 @@ class Model
             cout<<nvertices <<" " <<nfaces <<"  "<< edges<<endl;
             OLB.set_size(nvertices,nvertices);
             double x,y,z;
+            this->filename = filename;
 
             for(int i = 0; i < nvertices; i++)
             {
@@ -156,9 +167,6 @@ class Model
                         if (pEq.second != -1)
                         {
                             auto pDiff = Diff.first;
-                            // cout<<"Face's points: "<<pEq.first<<", "<<pEq.second<<endl;
-                            // cout<<"   ->  "<<m_Vertexs[pEq.first]<<"   ,    "<<m_Vertexs[pEq.second]<<endl;
-                            // cout<<"   DP: "<<m_Vertexs[pDiff.first]<<"   ,   "<<m_Vertexs[pDiff.second]<<endl;
 
                             //Puntos Opuestos
                             Point3D pD1 = m_Vertexs[pDiff.first];
@@ -171,8 +179,8 @@ class Model
                             double numerador=0,denominador,angle1,angle2;
 
                             //Vectores Primera cara
-                            eucVector v1 = pE1-pD1;
-                            eucVector v2 = pE2-pD1;
+                            eucVector v1 = pD1 - pE1;
+                            eucVector v2 = pD1 - pE2;
 
                             // showVector(v1,"  v1");
                             // showVector(v2,"  v2");
@@ -191,14 +199,15 @@ class Model
                             angle1 = acos(numerador/denominador);
                             //cout<<"Angulo1: "<<angle1<<endl;
 
-
+                            double temp1,temp2;
+                            temp1=angle1;
                             //Get cotan of angle
                             angle1 = 1/tan(angle1);
 
 
                             //Vectores Segunda cara
-                            v1 = pE1-pD2;
-                            v2 = pE2-pD2;
+                            v1 = pD2 - pE1;
+                            v2 = pD2 - pE2;
 
 
 
@@ -213,14 +222,16 @@ class Model
                             denominador = getVectorModule(v1)*getVectorModule(v2);
 
                             angle2 = acos(numerador/denominador);
-
+                            temp2=angle2;
                             //Get cotan of angle2
                             angle2 = 1/tan(angle2);
 
-                            //cout<<"   Angulos = "<<angle1<<", "<<angle2<<", "<<endl;
+                            //cout<<"   Angulos cara:  "<<i<<","<<j<<" , pEq: "<<pEq.first<<" , "<<pEq.second<<" = "<<temp1*(180.0/M_PI)<<", "<<temp2*(180.0/M_PI)<<", "<<endl;
+                            //cout<<"\tpED: "<<pD2<<"||->"<<acos(numerador/denominador)<<endl;
 
                             //Añadirlo a map
                             m_Weights[pEq]=(angle1+angle2)/2;
+                            
 
                             //cout<<endl;
                         }
@@ -238,41 +249,32 @@ class Model
                 
                 for(int j = 0; j < nvertices; j++)
                 {
-                    //Tiene arista
-                    if (m_Edges[i].find(j) != m_Edges[i].end())
-                    {
-                        //Tiene peso disponible
-                        pair<int,int> p(i,j);
-                        if (m_Weights.find(p) != m_Weights.end()){
-                            //cout<<"Peso: "<<i <<" "<<j<<" -> "<<m_Weights[p]<<endl;
-                            OLB(i,j)=m_Weights[p];
-                        }
-                        else{
-                            OLB(i,j)=-1;
-                        }
-                    }
-                    if (i==j){
-                        OLB(i,j)=-2;
+                    //Tiene peso disponible
+                    pair<int,int> p(i,j);
+                    if (m_Weights.find(p) != m_Weights.end()){
+                        //cout<<"Peso: "<<i <<" "<<j<<" -> "<<m_Weights[p]<<endl;
+                        OLB(i,j)=m_Weights[p];
+                        OLB(j,i)=m_Weights[p];
                     }
                 }
             }
             
-            for(int i = 0; i < nvertices; i++)
-            {
-                double sum=0;
-                for (int j=0; j < nvertices; j++)
-                {
-                    sum += OLB.at(i,j);
-                }
-                OLB(i,i) = -sum;
-            }
+            // for(int i = 0; i < nvertices; i++)
+            // {
+            //     double sum=0;
+            //     for (int j=0; j < nvertices; j++)
+            //     {
+            //         sum += OLB.at(i,j);
+            //     }
+            //     OLB(i,i) = -sum;
+            // }
             
             
         }
 
         void showOLB()
         {
-            this->OLB.raw_print();
+            this->OLB.print_dense();
         }
 
         void showWeights()
@@ -282,5 +284,52 @@ class Model
                 auto tupla=i.first;
                 cout<< tupla.first <<", "<<tupla.second<<" -> "<<i.second<<endl;
             }
+        }
+
+        void setEigen(int n)
+        {
+            this->m_nEigen = n;
+            arma::eigs_sym(this->eigval,this->eigvec,this->OLB,n);
+        }
+
+        void showEigen()
+        {
+            cout<<this->eigval<<endl;
+            cout<<this->eigvec<<endl;
+        }
+
+        void showProperties()
+        {
+            cout<<"Vertices: "<<this->m_Vertexs.size();
+        }
+
+        void getGPS(int K,bool invertido){
+            vector<double> Tgps;
+            vector<double> Pgps;
+            double promedio;
+            for(int i = 0; i < this->m_Vertexs.size(); i++)
+            {
+                promedio = 0;
+                for(int j = 0; j < this->m_nEigen; j++)
+                {
+                    if (eigval.at(j) > 0){
+                        promedio += ( 1.0/sqrt( this->eigval.at(j) ) ) * ( this->eigvec.at(i,j) );
+                    }
+                }
+                promedio /= this->m_nEigen;
+                //promedio = abs(promedio);
+                Tgps.push_back(promedio);
+            }
+            
+            sort(Tgps.begin(),Tgps.end());
+            
+            if (invertido){
+                reverse(Tgps.begin(),Tgps.end());
+            }
+
+            cout<<this->filename<<" -> ";
+            for(size_t i = 0; i < K; i++)
+                cout<<Tgps[i]<<" ";
+            cout<<endl;  
         }
 };

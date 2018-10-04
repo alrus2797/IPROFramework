@@ -60,7 +60,7 @@ double getVectorModule(eucVector v)
     {
         res+=pow(i,2);
     }
-    return pow(res,0.5);
+    return sqrt(res);
 }
 
 void showVector(eucVector v,string message="vector")

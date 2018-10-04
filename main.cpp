@@ -1,22 +1,48 @@
 
 
-#include "Model.h"
+#include "GPS.h"
 
 using namespace std;
 
 
+int maino(){
+    Point3D a(0,1,0);
+    Point3D b(0,2,0);
+    auto c = a-b;
+    imp(c);
+    cout<<"Modulo"<<getVectorModule(c)<<endl;
+    Model modelo;
+    auto d = make_tuple(1,2,3);
+    auto e = make_tuple(3,4,1);
+    auto res = modelo.getDiff(d,e);
+    cout << res.first.first <<","<< res.first.second <<" -- "<< res.second.first <<","<< res.second.second<<endl;
+}
 
+int main(){
+    GPS gps("animales.pro");
+    gps.getAllGPS();
+}
 
-int main()
+int maini()
 {
     Model modelo;
-    modelo.ReadOff("0003.sampling.3.off");
+    modelo.ReadOff("animales/cat0.off");
+    //modelo.ReadOff("animales/victoria25.off");
     //int pru;
     //cin>>pru;
+    //modelo.PrintOFF();
     modelo.SetAngles();
-    cout<<"Done"<<endl;
+    //cout<<"Done"<<endl;
+    //modelo.showWeights();
     modelo.setOLBValues();
-    modelo.showOLB();
+    //modelo.showOLB();
+    modelo.setEigen(30);
+    cout<<"------"<<endl;
+    //modelo.showEigen(); 
+
+    modelo.getGPS(30,true);
+    
+    //modelo.showOLB();
     //modelo.showWeights();
 
     // eucVector u={5,6,0};
