@@ -18,27 +18,27 @@ int maino(){
     cout << res.first.first <<","<< res.first.second <<" -- "<< res.second.first <<","<< res.second.second<<endl;
 }
 
-int main(){
+int maini(){
     GPS gps("animales.pro");
     gps.getAllGPS();
 }
 
-int maini()
+int main()
 {
     Model modelo;
-    modelo.ReadOff("animales/cat0.off");
-    //modelo.ReadOff("animales/victoria25.off");
+    //modelo.ReadOff("animales/cat0.off");
+    modelo.ReadOff("test1.off");
     //int pru;
     //cin>>pru;
     //modelo.PrintOFF();
     modelo.SetAngles();
     //cout<<"Done"<<endl;
-    //modelo.showWeights();
+    modelo.showWeights();
     modelo.setOLBValues();
-    //modelo.showOLB();
-    modelo.setEigen(30);
     cout<<"------"<<endl;
-    //modelo.showEigen(); 
+    modelo.showOLB();
+    modelo.setEigen(2);
+    modelo.showEigen(); 
 
     modelo.getGPS(30,true);
     

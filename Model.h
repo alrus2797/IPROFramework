@@ -226,8 +226,8 @@ class Model
                             //Get cotan of angle2
                             angle2 = 1/tan(angle2);
 
-                            //cout<<"   Angulos cara:  "<<i<<","<<j<<" , pEq: "<<pEq.first<<" , "<<pEq.second<<" = "<<temp1*(180.0/M_PI)<<", "<<temp2*(180.0/M_PI)<<", "<<endl;
-                            //cout<<"\tpED: "<<pD2<<"||->"<<acos(numerador/denominador)<<endl;
+                            cout<<"   Angulos cara:  "<<i<<","<<j<<" , pEq: "<<pEq.first<<" , "<<pEq.second<<" = "<<temp1*(180.0/M_PI)<<", "<<temp2*(180.0/M_PI)<<", "<<endl;
+                            cout<<"\tpED: "<<pD2<<"||->"<<acos(numerador/denominador)<<endl;
 
                             //Añadirlo a map
                             m_Weights[pEq]=(angle1+angle2)/2;
@@ -259,22 +259,23 @@ class Model
                 }
             }
             
-            // for(int i = 0; i < nvertices; i++)
-            // {
-            //     double sum=0;
-            //     for (int j=0; j < nvertices; j++)
-            //     {
-            //         sum += OLB.at(i,j);
-            //     }
-            //     OLB(i,i) = -sum;
-            // }
+            for(int i = 0; i < nvertices; i++)
+            {
+                double sum=0;
+                for (int j=0; j < nvertices; j++)
+                {
+                    sum += OLB.at(i,j);
+                }
+                OLB(i,i) = -sum;
+            }
             
             
         }
 
         void showOLB()
         {
-            this->OLB.print_dense();
+            cout<<"OLB:";
+            cout<<OLB;
         }
 
         void showWeights()
